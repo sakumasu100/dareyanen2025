@@ -18,16 +18,16 @@
     --gap:6px;
     --control-col:100px;
     /* チームカラー */
-    --EARTH-JETS:#065f46;           /* 深緑 */
-    --赤坂ドリブンズ:#a3e635;      /* 黄緑 */
-    --EX風林火山:#8B5E3C;          /* 茶色 */
-    --KADOKAWAサクラナイツ:#f472b6; /* ピンク */
-    --KONAMI麻雀格闘倶楽部:#ef4444; /* 赤 */
-    --渋谷ABEMAS:#9ca3af;           /* 灰 */
-    --セガサミーフェニックス:#fb923c; /* オレンジ */
-    --TEAM-RAIDEN-雷電:#facc15;     /* 黄 */
-    --BEAST-X:#1e3a8a;              /* 紺 */
-    --U-NEXT-Pirates:#60a5fa;       /* 空色 */
+    --EARTH-JETS:#065f46;
+    --赤坂ドリブンズ:#a3e635;
+    --EX風林火山:#8B5E3C;
+    --KADOKAWAサクラナイツ:#f472b6;
+    --KONAMI麻雀格闘倶楽部:#ef4444;
+    --渋谷ABEMAS:#9ca3af;
+    --セガサミーフェニックス:#fb923c;
+    --TEAM-RAIDEN-雷電:#facc15;
+    --BEAST-X:#1e3a8a;
+    --U-NEXT-Pirates:#60a5fa;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -36,7 +36,7 @@
     font-family:'Noto Sans JP',system-ui,sans-serif;
     background:var(--page-bg);
     color:#111;
-    overflow:hidden; /* 画面内に収める */
+    overflow:hidden;
   }
   .wrap{
     max-width:1920px;
@@ -46,22 +46,19 @@
     display:flex;
     flex-direction:column;
     gap:4px;
-    align-items:flex-start; /* 左寄せ */
-    justify-content:flex-start; /* 上寄せ */
+    align-items:flex-start;
+    justify-content:flex-start;
   }
   .title{
     font-family:'Yusei Magic','Noto Sans JP',sans-serif;
     font-size:32px;
-    text-align:left;
     margin:0 0 4px;
-    line-height:1.1;
   }
   /* 左大（2.5fr）｜細い操作列｜中小（1fr）｜右（非表示） */
   .grid{
     display:grid;
     grid-template-columns: 2.5fr var(--control-col) 1fr 0fr;
     gap:var(--gap);
-    align-items:start;
     flex:1 1 auto;
     min-height:0;
     width:100%;
@@ -77,44 +74,47 @@
   .panel h2{margin:0 0 4px;font-size:13px;font-weight:800}
   .panel.left h2{font-size:14px}
   .panel.mid h2{font-size:12px;opacity:0.9}
-  /* 左のリストは少し中央寄せに見えるように */
   .list-left{display:flex;flex-direction:column;justify-content:center;min-height:calc(100% - 20px)}
-  /* 1行：短縮チーム名 + 4人 */
+  /* 1行：短縮チーム名 + 4人（等幅＆隙間=1文字分） */
   .groupRow{
     display:grid;
-    grid-template-columns:110px repeat(4, 1fr);
+    grid-template-columns:110px repeat(4, 1fr); /* ← 等幅 */
     align-items:center;
-    gap:4px;
-    padding:4px 4px;
+    column-gap:1ch;   /* ← ほぼ「1文字分」の隙間 */
+    row-gap:2px;
+    padding:1px 2px;
     border-radius:6px;
-    margin-bottom:4px;
+    margin-bottom:0;
   }
   .team-pill{
     display:inline-block;
     min-width:110px; text-align:center;
-    padding:3px 6px;
+    padding:1px 4px;
     border-radius:999px;
     font-weight:800; font-size:12px;
     color:#fff; white-space:nowrap; cursor:pointer;
   }
+  .cell{display:flex; align-items:center;}
   .chip{
     display:inline-flex; align-items:center; justify-content:center;
-    padding:8px 10px;  /* 少しだけ高さを増やす */
+    width:100%;              /* ← 各セルで同じ幅に */
+    padding:2px 4px;         /* ← 余白を最小限 */
     border-radius:999px;
     border:2px solid var(--chip-bd);
     background:var(--chip-bg);
-    font-weight:800; cursor:pointer;
-    min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    font-weight:900; cursor:pointer;
+    line-height:1.1;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    text-align:center;
   }
-  .panel.left .chip{ font-size:22px; }   /* 左は約1.5倍（旧15px→22px） */
-  .panel.mid  .chip{ font-size:12px; }   /* 中央は小さめのまま */
-  .chip.male{background:#dbeafe}      /* 男＝薄い青 */
-  .chip.female{background:#ffe4e6}    /* 女＝薄いピンク */
-  .chip.highlight{background:#fef9c3 !important} /* 指定の薄黄色 */
+  .panel.left .chip{ font-size:32px; }   /* 大きく統一 */
+  .panel.mid  .chip{ font-size:12px; }
+  .chip.male{background:#dbeafe}
+  .chip.female{background:#ffe4e6}
+  .chip.highlight{background:#fef9c3 !important}
   .empty{font-size:11px;color:#64748b;padding:0 4px}
-  /* 細い操作列 */
   .centerCol{
-    display:flex; flex-direction:column; align-items:stretch; gap:6px; padding-top:2px; height:100%;
+    display:flex; flex-direction:column; gap:6px; padding-top:2px;
   }
   .btn{
     border:2px solid #111;
@@ -124,13 +124,11 @@
     cursor:pointer;
     font-weight:800;
     font-size:12px;
-    white-space:nowrap; /* 1行に収める */
+    white-space:nowrap;
   }
-  #excludeAllMid{ margin-top:18px; } /* 1コマ分下げる */
+  #excludeAllMid{ margin-top:18px; }
   .btn.active{ background:#111; color:#fff; }
-  /* 右（完全除外）はDOM上保持するが非表示 */
   .right-hidden{ display:none !important; }
-  /* 下部：リセットのみ */
   .controls{display:flex;justify-content:flex-start}
   .reset-big{
     font-size:14px;
@@ -148,7 +146,6 @@
   <h1 class="title">誰やねん</h1>
 
   <div class="grid">
-    <!-- Left (big) -->
     <section class="panel left">
       <h2>・お前やねん</h2>
       <div class="list-left">
@@ -157,7 +154,6 @@
       </div>
     </section>
 
-    <!-- Control between Left and Mid -->
     <div class="centerCol">
       <button id="swapBtn" class="btn">左右を入れ替える</button>
       <button id="excludeMaleBtn" class="btn">男を除外</button>
@@ -165,14 +161,12 @@
       <button id="excludeAllMid" class="btn">完全に除外</button>
     </div>
 
-    <!-- Mid (small) -->
     <section class="panel mid">
       <h2>・お前じゃないねん</h2>
       <div id="mid"></div>
       <div id="midEmpty" class="empty">中央にはまだ何もありません</div>
     </section>
 
-    <!-- Right (Excluded) HIDDEN but stateful -->
     <section class="panel right-hidden">
       <h2>・完全除外</h2>
       <div id="right"></div>
@@ -180,7 +174,6 @@
     </section>
   </div>
 
-  <!-- Bottom control (Reset only) -->
   <div class="controls">
     <button id="resetAll" class="reset-big">全てリセット</button>
   </div>
@@ -240,7 +233,6 @@ const DATA=[
 {id:"nakabayashi",label:"仲林圭",team:"U-NEXT Pirates",short:"Pirates",gender:"男"},
 {id:"mizuhara_2",label:"瑞原明奈",team:"U-NEXT Pirates",short:"Pirates",gender:"女"}
 ];
-/* 指定の薄黄色ハイライト */
 const HIGHLIGHT_SET=new Set(["石井一馬","三浦智博","HIRO柴田","逢川恵夢","永井孝典","阿久津翔太","下石戟"]);
 
 /* ---- 状態 ---- */
@@ -263,7 +255,6 @@ function itemsAt(loc){return DATA.filter(p=>(locationMap.get(p.id)||'left')===lo
 function moveTo(id,newLoc){const cur=locationMap.get(id)||'left';if(cur===newLoc)return;prevMap.set(id,cur);locationMap.set(id,newLoc);}
 function revertOne(id){
   const cur=locationMap.get(id)||'left';
-  // 右（完全除外）にいる人名をクリックしたら左へ戻す（右は非表示運用）
   if(cur==='right'){ prevMap.set(id,'right'); locationMap.set(id,'left'); return; }
   const prev=prevMap.get(id);
   if(!prev){
@@ -305,10 +296,12 @@ function renderPanelRow(root,items,context){
       render();
     });
     row.appendChild(pill);
+
     /* up to 4 chips */
     for(let i=0;i<4;i++){
       const p=arr[i];
       const cell=document.createElement('div');
+      cell.className='cell';
       if(p){
         const chip=document.createElement('div');
         chip.className='chip ' + (p.gender==='男'?'male':'female');
