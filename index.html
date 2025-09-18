@@ -19,16 +19,16 @@
     --control-col:170px;
     --exclude-col:170px;
     /* チームカラー */
-    --EARTH-JETS:#065f46;
-    --赤坂ドリブンズ:#a3e635;
-    --EX風林火山:#8B5E3C;
-    --KADOKAWAサクラナイツ:#f472b6;
-    --KONAMI麻雀格闘倶楽部:#ef4444;
-    --渋谷ABEMAS:#9ca3af;
-    --セガサミーフェニックス:#fb923c;
-    --TEAM-RAIDEN-雷電:#facc15;
-    --BEAST-X:#1e3a8a;
-    --U-NEXT-Pirates:#60a5fa;
+    --EARTH-JETS:#065f46;           /* 深緑 */
+    --赤坂ドリブンズ:#a3e635;      /* 黄緑 */
+    --EX風林火山:#8B5E3C;          /* 茶色 */
+    --KADOKAWAサクラナイツ:#f472b6; /* ピンク */
+    --KONAMI麻雀格闘倶楽部:#ef4444; /* 赤 */
+    --渋谷ABEMAS:#9ca3af;           /* 灰 */
+    --セガサミーフェニックス:#fb923c; /* オレンジ */
+    --TEAM-RAIDEN-雷電:#facc15;     /* 黄 */
+    --BEAST-X:#1e3a8a;              /* 紺 */
+    --U-NEXT-Pirates:#60a5fa;       /* 空色 */
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:'Noto Sans JP',system-ui,sans-serif;background:var(--page-bg);color:#111}
@@ -68,6 +68,7 @@
     font-size:12px;
     color:#fff;
     white-space:nowrap;
+    cursor:pointer;
   }
   .chip{
     display:inline-flex;
@@ -104,7 +105,7 @@
   .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .label-reset{font-size:12px;font-weight:700;border:2px solid #111;background:#fff;padding:6px 10px;border-radius:999px;cursor:pointer}
   .tbtn{border:none;background:transparent;cursor:pointer;padding:0;margin:0}
-  .tbtn .team-pill{min-width:auto;} /* 下の選択ピルは可変幅のまま（正式名のまま） */
+  .tbtn .team-pill{min-width:auto;} /* 下の選択ピルは可変幅（正式名のまま） */
   .tbtn.active .team-pill{outline:3px solid rgba(0,0,0,.15)}
   @media(max-width:1200px){
     .grid{grid-template-columns:1fr;gap:10px}
@@ -207,14 +208,14 @@ const DATA=[
 {id:"mizuhara_2",label:"瑞原明奈",team:"U-NEXT Pirates",short:"Pirates",gender:"女"}
 ];
 
-// 短縮名で表示するのは上段のパネルだけ。下の選択ピルは正式名のまま。
 const HIGHLIGHT_SET=new Set(["石井一馬","三浦智博","HIRO柴田","逢川恵夢","永井孝典","阿久津翔太","下石戟"]);
 const teams=["EARTH JETS","赤坂ドリブンズ","EX風林火山","KADOKAWAサクラナイツ","KONAMI麻雀格闘倶楽部","渋谷ABEMAS","セガサミーフェニックス","TEAM RAIDEN/雷電","BEAST X","U-NEXT Pirates"];
 
 // ---- State ----
-const locationMap = new Map(); DATA.forEach(p=>locationMap.set(p.id,'left')); // id -> 'left' | 'mid' | 'right'
-const prevMap = new Map(); // id -> previous location
-const leftTeams = new Set(); // which teams to show on the left
+// 初期状態：全員 left、かつ 全チームを左表示対象にする
+const locationMap = new Map(); DATA.forEach(p=>locationMap.set(p.id,'left'));
+const prevMap = new Map();
+const leftTeams = new Set(teams); // ← 全チームON
 
 // Exclude toggles
 let toggledMaleSet=new Set(), toggledFemaleSet=new Set();
@@ -263,7 +264,8 @@ function groupByTeam(items){
 }
 
 // 1段で「短縮チーム名 + 最大4人」
-function renderPanelRow(root,items){
+// context: 'left' | 'mid' | 'right'（pillクリック時の移動先決定に使う）
+function renderPanelRow(root,items,context){
   root.innerHTML='';
   const map=groupByTeam(items);
   for(const [team,arr] of map.entries()){
@@ -273,11 +275,27 @@ function renderPanelRow(root,items){
     row.className='groupRow';
     row.style.background=`color-mix(in hsl, var(--${key}) 14%, white)`;
 
-    // 短縮名
+    // 短縮名 pill（クリックで4人一括移動）
     const pill=document.createElement('span');
     pill.className='team-pill';
     pill.textContent=arr[0].short;
     pill.style.background=`var(--${key})`;
+    pill.title = (context==='left') ? 'このチームの4人を中央へ'
+               : (context==='mid') ? 'このチームの4人を左へ'
+               : 'このチームの4人を左へ';
+    pill.addEventListener('click',()=>{
+      if(context==='left'){
+        // 左に居るこのチームの面子 → 中央へ
+        arr.forEach(p=>moveTo(p.id,'mid'));
+      }else if(context==='mid'){
+        // 中央に居るこのチームの面子 → 左へ
+        arr.forEach(p=>moveTo(p.id,'left'));
+      }else if(context==='right'){
+        // 完全除外に居るこのチームの面子 → 左へ（救済）
+        arr.forEach(p=>moveTo(p.id,'left'));
+      }
+      render();
+    });
     row.appendChild(pill);
 
     // up to 4 chips
@@ -309,9 +327,9 @@ function render(){
   const midItems=itemsAt('mid');
   const rightItems=itemsAt('right');
 
-  renderPanelRow(leftRoot,leftItems);
-  renderPanelRow(midRoot,midItems);
-  renderPanelRow(rightRoot,rightItems);
+  renderPanelRow(leftRoot,leftItems,'left');
+  renderPanelRow(midRoot,midItems,'mid');
+  renderPanelRow(rightRoot,rightItems,'right');
 
   leftEmpty.style.display = leftItems.length ? 'none' : 'block';
   midEmpty.style.display  = midItems.length ? 'none' : 'block';
@@ -324,7 +342,7 @@ const teamButtons={};
 teams.forEach(team=>{
   const key=teamKey(team);
   const btn=document.createElement('button');
-  btn.className='tbtn';
+  btn.className='tbtn active'; // 初期状態で全チームON表示
   btn.dataset.team=team;
   const pill=document.createElement('span');
   pill.className='team-pill';
@@ -342,12 +360,12 @@ teams.forEach(team=>{
 });
 
 // ---- Buttons ----
-// 全てリセット
+// 全てリセット：全員を左／全チームON／トグル解除
 document.getElementById('resetAll').addEventListener('click',()=>{
-  leftTeams.clear();
+  leftTeams.clear(); teams.forEach(t=>leftTeams.add(t));
   locationMap.clear(); prevMap.clear();
   DATA.forEach(p=>locationMap.set(p.id,'left'));
-  Object.values(teamButtons).forEach(b=>b.classList.remove('active'));
+  Object.values(teamButtons).forEach(b=>b.classList.add('active'));
   // exclude toggles reset
   maleActive=false; femaleActive=false;
   toggledMaleSet=new Set(); toggledFemaleSet=new Set();
@@ -356,7 +374,7 @@ document.getElementById('resetAll').addEventListener('click',()=>{
   render();
 });
 
-// 全てのチームを選択（位置は変更しない）
+// 全てのチームを選択（念のため）
 document.getElementById('selectAllTeams').addEventListener('click',()=>{
   teams.forEach(t=>leftTeams.add(t));
   Object.values(teamButtons).forEach(b=>b.classList.add('active'));
