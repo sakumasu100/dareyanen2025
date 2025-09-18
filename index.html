@@ -16,8 +16,8 @@
     --chip-bg:#f8fafc;
     --chip-bd:#cbd5e1;
     --gap:10px;
-    --control-col:170px;
-    --exclude-col:170px;
+    --control-col:175px;
+    --exclude-col:175px;
     /* チームカラー */
     --EARTH-JETS:#065f46;           /* 深緑 */
     --赤坂ドリブンズ:#a3e635;      /* 黄緑 */
@@ -31,32 +31,37 @@
     --U-NEXT-Pirates:#60a5fa;       /* 空色 */
   }
   *{box-sizing:border-box}
-  body{margin:0;font-family:'Noto Sans JP',system-ui,sans-serif;background:var(--page-bg);color:#111}
-  .wrap{max-width:1800px;margin:12px auto;padding:0 10px}
-  .title{font-family:'Yusei Magic','Noto Sans JP',sans-serif;font-size:36px;text-align:center;margin:0 0 8px}
+  html,body{height:100%}
+  body{margin:0;font-family:'Noto Sans JP',system-ui,sans-serif;background:var(--page-bg);color:#111; overflow:hidden;}
+  .wrap{max-width:1920px;margin:8px auto;padding:0 12px;height:calc(100vh - 16px);display:flex;flex-direction:column;gap:8px}
+  .title{font-family:'Yusei Magic','Noto Sans JP',sans-serif;font-size:40px;text-align:center;margin:0}
   /* Layout: Left | Control | Mid | ExcludeBtn | Right */
   .grid{
     display:grid;
     grid-template-columns: 1fr var(--control-col) 1fr var(--exclude-col) 1fr;
     gap:var(--gap);
     align-items:start;
+    flex:1 1 auto;
+    min-height:0; /* allow children to shrink */
   }
   .panel{
     background:var(--panel-bg);
     border:2px solid var(--border);
     border-radius:10px;
     padding:8px;
+    height:100%;
+    overflow:auto;
   }
-  .panel h2{margin:0 0 6px;font-size:14px;font-weight:800}
+  .panel h2{margin:0 0 6px;font-size:16px;font-weight:800}
   /* 1段で「チーム名 + 最大4人」を横並びにする行 */
   .groupRow{
     display:grid;
     grid-template-columns:110px repeat(4, 1fr);
     align-items:center;
     gap:6px;
-    padding:6px;
+    padding:4px 6px;
     border-radius:8px;
-    margin-bottom:6px;
+    margin-bottom:4px;
   }
   .team-pill{
     display:inline-block;
@@ -92,23 +97,19 @@
   .empty{font-size:12px;color:#64748b;padding:0 6px}
   /* Control columns */
   .centerCol, .excludeCol{
-    display:flex; flex-direction:column; align-items:center; gap:8px; padding-top:4px;
+    display:flex; flex-direction:column; align-items:stretch; gap:10px; padding-top:4px; height:100%;
   }
   .btn{
-    border:2px solid #111; background:#fff; padding:8px 10px; border-radius:9px; cursor:pointer; font-weight:800; font-size:13px;
-    width:100%;
+    border:2px solid #111; background:#fff; padding:10px 12px; border-radius:10px; cursor:pointer; font-weight:800; font-size:14px;
   }
   .btn.active{ background:#111; color:#fff; }
-  .note{font-size:11px;color:#6b7280;text-align:center}
-  /* Controls under panels */
-  .controls{margin:10px 0 0;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
-  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  .label-reset{font-size:12px;font-weight:700;border:2px solid #111;background:#fff;padding:6px 10px;border-radius:999px;cursor:pointer}
-  .tbtn{border:none;background:transparent;cursor:pointer;padding:0;margin:0}
-  .tbtn .team-pill{min-width:auto;} /* 下の選択ピルは可変幅（正式名のまま） */
-  .tbtn.active .team-pill{outline:3px solid rgba(0,0,0,.15)}
-  @media(max-width:1200px){
-    .grid{grid-template-columns:1fr;gap:10px}
+  .note{font-size:12px;color:#6b7280;text-align:center}
+  /* Bottom controls */
+  .controls{display:flex;justify-content:center}
+  .reset-big{font-size:16px;font-weight:900;border:3px solid #111;background:#fff;padding:10px 18px;border-radius:999px;cursor:pointer}
+  @media(max-width:1400px){
+    .title{font-size:34px}
+    .btn{font-size:13px;padding:9px 10px}
   }
 </style>
 </head>
@@ -127,9 +128,9 @@
     <!-- Control between Left and Mid -->
     <div class="centerCol">
       <button id="swapBtn" class="btn">左右を入れ替える</button>
-      <button id="excludeMaleBtn" class="btn">男を除外</button>
-      <button id="excludeFemaleBtn" class="btn">女を除外</button>
-      <div class="note">※ 除外はトグル。もう一度押すと戻す</div>
+      <button id="excludeMaleBtn" class="btn">男を除外（トグル）</button>
+      <button id="excludeFemaleBtn" class="btn">女を除外（トグル）</button>
+      <div class="note">※ 除外ボタンは、左に“見えている”該当性別だけ中央へ移動／再押下で戻す</div>
     </div>
 
     <!-- Mid -->
@@ -153,13 +154,9 @@
     </section>
   </div>
 
-  <!-- Bottom controls -->
+  <!-- Bottom control (Reset only) -->
   <div class="controls">
-    <div class="row">
-      <button id="resetAll" class="label-reset">全てリセット</button>
-      <button id="selectAllTeams" class="label-reset">全てのチームを選択</button>
-    </div>
-    <div class="row" id="teamsRow"></div>
+    <button id="resetAll" class="reset-big">全てリセット</button>
   </div>
 </div>
 
@@ -212,10 +209,9 @@ const HIGHLIGHT_SET=new Set(["石井一馬","三浦智博","HIRO柴田","逢川�
 const teams=["EARTH JETS","赤坂ドリブンズ","EX風林火山","KADOKAWAサクラナイツ","KONAMI麻雀格闘倶楽部","渋谷ABEMAS","セガサミーフェニックス","TEAM RAIDEN/雷電","BEAST X","U-NEXT Pirates"];
 
 // ---- State ----
-// 初期状態：全員 left、かつ 全チームを左表示対象にする
+// 初期状態：全員 left（全チーム表示）。下のチーム選択は廃止。
 const locationMap = new Map(); DATA.forEach(p=>locationMap.set(p.id,'left'));
 const prevMap = new Map();
-const leftTeams = new Set(teams); // ← 全チームON
 
 // Exclude toggles
 let toggledMaleSet=new Set(), toggledFemaleSet=new Set();
@@ -285,13 +281,10 @@ function renderPanelRow(root,items,context){
                : 'このチームの4人を左へ';
     pill.addEventListener('click',()=>{
       if(context==='left'){
-        // 左に居るこのチームの面子 → 中央へ
         arr.forEach(p=>moveTo(p.id,'mid'));
       }else if(context==='mid'){
-        // 中央に居るこのチームの面子 → 左へ
         arr.forEach(p=>moveTo(p.id,'left'));
       }else if(context==='right'){
-        // 完全除外に居るこのチームの面子 → 左へ（救済）
         arr.forEach(p=>moveTo(p.id,'left'));
       }
       render();
@@ -320,7 +313,7 @@ function renderPanelRow(root,items,context){
 }
 
 function itemsAt(loc){ return DATA.filter(p => (locationMap.get(p.id)||'left')===loc); }
-function visibleLeftItems(){ return DATA.filter(p => (locationMap.get(p.id)||'left')==='left' && leftTeams.has(p.team)); }
+function visibleLeftItems(){ return itemsAt('left'); } // ← 全チーム常に表示
 
 function render(){
   const leftItems=visibleLeftItems();
@@ -336,36 +329,11 @@ function render(){
   rightEmpty.style.display= rightItems.length ? 'none' : 'block';
 }
 
-// ---- Bottom team buttons (正式名のまま) ----
-const teamsRow=document.getElementById('teamsRow');
-const teamButtons={};
-teams.forEach(team=>{
-  const key=teamKey(team);
-  const btn=document.createElement('button');
-  btn.className='tbtn active'; // 初期状態で全チームON表示
-  btn.dataset.team=team;
-  const pill=document.createElement('span');
-  pill.className='team-pill';
-  pill.textContent=team;            // 正式名表示
-  pill.style.background=`var(--${key})`;
-  pill.style.color='#fff';
-  btn.appendChild(pill);
-  btn.addEventListener('click',()=>{
-    if (leftTeams.has(team)){ leftTeams.delete(team); btn.classList.remove('active'); }
-    else { leftTeams.add(team); btn.classList.add('active'); }
-    render();
-  });
-  teamButtons[team]=btn;
-  teamsRow.appendChild(btn);
-});
-
 // ---- Buttons ----
-// 全てリセット：全員を左／全チームON／トグル解除
+// 全てリセット：全員を左／トグル解除
 document.getElementById('resetAll').addEventListener('click',()=>{
-  leftTeams.clear(); teams.forEach(t=>leftTeams.add(t));
   locationMap.clear(); prevMap.clear();
   DATA.forEach(p=>locationMap.set(p.id,'left'));
-  Object.values(teamButtons).forEach(b=>b.classList.add('active'));
   // exclude toggles reset
   maleActive=false; femaleActive=false;
   toggledMaleSet=new Set(); toggledFemaleSet=new Set();
@@ -374,27 +342,20 @@ document.getElementById('resetAll').addEventListener('click',()=>{
   render();
 });
 
-// 全てのチームを選択（念のため）
-document.getElementById('selectAllTeams').addEventListener('click',()=>{
-  teams.forEach(t=>leftTeams.add(t));
-  Object.values(teamButtons).forEach(b=>b.classList.add('active'));
-  render();
-});
-
-// 左↔中央 入れ替え（左に表示中の人 ↔ 中央の全員）
+// 左↔中央 入れ替え（左にいる全員 ↔ 中央の全員）
 document.getElementById('swapBtn').addEventListener('click',()=>{
-  const leftNow=visibleLeftItems();
+  const leftNow=itemsAt('left');
   const midNow=itemsAt('mid');
   leftNow.forEach(p=>moveTo(p.id,'mid'));
   midNow.forEach(p=>moveTo(p.id,'left'));
   render();
 });
 
-// 男を除外（トグル）：左に見えている男→中央／再押下で中央に残る該当者を左へ戻す
+// 男を除外（トグル）：左にいる男→中央／再押下で中央に残る該当者を左へ戻す
 document.getElementById('excludeMaleBtn').addEventListener('click',(e)=>{
   const btn=e.currentTarget;
   if(!maleActive){
-    toggledMaleSet=new Set(visibleLeftItems().filter(p=>p.gender==='男').map(p=>p.id));
+    toggledMaleSet=new Set(itemsAt('left').filter(p=>p.gender==='男').map(p=>p.id));
     toggledMaleSet.forEach(id=>moveTo(id,'mid'));
     maleActive=true; btn.classList.add('active');
   }else{
@@ -410,7 +371,7 @@ document.getElementById('excludeMaleBtn').addEventListener('click',(e)=>{
 document.getElementById('excludeFemaleBtn').addEventListener('click',(e)=>{
   const btn=e.currentTarget;
   if(!femaleActive){
-    toggledFemaleSet=new Set(visibleLeftItems().filter(p=>p.gender==='女').map(p=>p.id));
+    toggledFemaleSet=new Set(itemsAt('left').filter(p=>p.gender==='女').map(p=>p.id));
     toggledFemaleSet.forEach(id=>moveTo(id,'mid'));
     femaleActive=true; btn.classList.add('active');
   }else{
