@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>誰やねん</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --page-bg:#ffffff;
+    --panel-bg:#ffffff;
+    --border:#e5e7eb;
+    --chip-bg:#f8fafc;
+    --chip-bd:#cbd5e1;
+    --gap:16px;
+    --EARTH-JETS:#065f46;
+    --赤坂ドリブンズ:#a3e635;
+    --EX風林火山:#8B5E3C;
+    --KADOKAWAサクラナイツ:#f472b6;
+    --KONAMI麻雀格闘倶楽部:#ef4444;
+    --渋谷ABEMAS:#9ca3af;
+    --セガサミーフェニックス:#fb923c;
+    --TEAM-RAIDEN-雷電:#facc15;
+    --BEAST-X:#1e3a8a;
+    --U-NEXT-Pirates:#60a5fa;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Noto Sans JP',system-ui,sans-serif;background:var(--page-bg);color:#111}
+  .wrap{max-width:1200px;margin:20px auto;padding:0 16px}
+  .title{font-family:'Yusei Magic', 'Noto Sans JP', sans-serif;font-size:44px;text-align:center;margin-bottom:16px}
+  .grid{display:grid;grid-template-columns:1fr auto 1fr;gap:var(--gap);align-items:start}
+  .panel{background:var(--panel-bg);border:2px solid var(--border);border-radius:14px;min-height:380px;padding:12px}
+  .panel h2{margin:4px 0 12px;font-size:16px;font-weight:800}
+  .group{border-radius:12px;padding:10px;margin-bottom:12px}
+  .team-pill{display:inline-block;padding:6px 12px;border-radius:999px;font-weight:800;font-size:14px}
+  .list{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px}
+  .chip{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border-radius:999px;border:2px solid var(--chip-bd);font-size:16px;font-weight:600;cursor:pointer}
+  .chip.male{background:#dbeafe}
+  .chip.female{background:#ffe4e6}
+  .chip.highlight{background:#fef9c3 !important}
+  .empty{font-size:13px;color:#64748b}
+  .centerCol{display:flex;flex-direction:column;align-items:center;gap:12px;padding-top:8px}
+  .swapBtn{border:2px solid #111;background:#fff;padding:10px 18px;border-radius:12px;cursor:pointer;font-weight:800}
+  .excludeRow{display:flex;flex-direction:column;gap:8px;align-items:center;margin-top:8px}
+  .exLabel{display:flex;align-items:center;gap:8px;font-weight:700;cursor:pointer}
+  .controls{margin:18px 0 0;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .label-reset{font-size:12px;font-weight:700;border:2px solid #111;background:#fff;padding:6px 10px;border-radius:999px;cursor:pointer}
+  .tbtn{border:none;background:transparent;cursor:pointer}
+  .tbtn.active .team-pill{outline:3px solid rgba(0,0,0,.15)}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="title">誰やねん</h1>
+  <div class="grid">
+    <section class="panel">
+      <h2>・お前やねん</h2>
+      <div id="left"></div>
+      <div id="leftEmpty" class="empty">左側にはまだ何も表示されていません</div>
+    </section>
+    <div class="centerCol">
+      <button id="swapBtn" class="swapBtn">左右を入れ替える</button>
+      <div class="excludeRow">
+        <label class="exLabel"><input type="checkbox" id="excludeMale"> 男を除外</label>
+        <label class="exLabel"><input type="checkbox" id="excludeFemale"> 女を除外</label>
+      </div>
+    </div>
+    <section class="panel">
+      <h2>・お前じゃないねん</h2>
+      <div id="right"></div>
+      <div id="rightEmpty" class="empty">右側にはまだ何もありません</div>
+    </section>
+  </div>
+  <div class="controls">
+    <div class="row"><button id="resetAll" class="label-reset">すべてをリセット</button></div>
+    <div class="row">
+      <button id="resetTeams" class="label-reset">チームをリセット</button>
+      <button id="selectAllTeams" class="label-reset">全てのチームを選択</button>
+    </div>
+    <div class="row" id="teamsRow"></div>
+  </div>
+</div>
+<script>
+const DATA=[
+{id:"ishii",label:"石井一馬",team:"EARTH JETS",gender:"男"},
+{id:"miura",label:"三浦智博",team:"EARTH JETS",gender:"男"},
+{id:"hiro",label:"HIRO柴田",team:"EARTH JETS",gender:"男"},
+{id:"aikawa",label:"逢川恵夢",team:"EARTH JETS",gender:"女"},
+{id:"sonoda",label:"園田賢",team:"赤坂ドリブンズ",gender:"男"},
+{id:"suzuki_ta",label:"鈴木たろう",team:"赤坂ドリブンズ",gender:"男"},
+{id:"watanabe",label:"渡辺太",team:"赤坂ドリブンズ",gender:"男"},
+{id:"asami",label:"浅見真紀",team:"赤坂ドリブンズ",gender:"女"},
+{id:"katsumata",label:"勝又健志",team:"EX風林火山",gender:"男"},
+{id:"nagai",label:"永井孝典",team:"EX風林火山",gender:"男"},
+{id:"uchikawa",label:"内川幸太郎",team:"EX風林火山",gender:"男"},
+{id:"nikaido_a",label:"二階堂亜樹",team:"EX風林火山",gender:"女"},
+{id:"hori",label:"堀慎吾",team:"KADOKAWAサクラナイツ",gender:"男"},
+{id:"shibukawa",label:"渋川難波",team:"KADOKAWAサクラナイツ",gender:"男"},
+{id:"akutsu",label:"阿久津翔太",team:"KADOKAWAサクラナイツ",gender:"男"},
+{id:"okada_2",label:"岡田紗佳",team:"KADOKAWAサクラナイツ",gender:"女"},
+{id:"sasaki_h",label:"佐々木寿人",team:"KONAMI麻雀格闘倶楽部",gender:"男"},
+{id:"takizawa",label:"滝沢和典",team:"KONAMI麻雀格闘倶楽部",gender:"男"},
+{id:"takamiya",label:"高宮まり",team:"KONAMI麻雀格闘倶楽部",gender:"女"},
+{id:"date_arisa",label:"伊達朱里紗",team:"KONAMI麻雀格闘倶楽部",gender:"女"},
+{id:"oi",label:"多井隆晴",team:"渋谷ABEMAS",gender:"男"},
+{id:"shiratori",label:"白鳥翔",team:"渋谷ABEMAS",gender:"男"},
+{id:"matsumoto",label:"松本吉弘",team:"渋谷ABEMAS",gender:"男"},
+{id:"hyuga",label:"日向藍子",team:"渋谷ABEMAS",gender:"女"},
+{id:"daigo",label:"醍醐大",team:"セガサミーフェニックス",gender:"男"},
+{id:"takeuchi",label:"竹内元太",team:"セガサミーフェニックス",gender:"男"},
+{id:"asai",label:"浅井堂岐",team:"セガサミーフェニックス",gender:"男"},
+{id:"chinamori_2",label:"茅森早香",team:"セガサミーフェニックス",gender:"女"},
+{id:"hagiwara",label:"萩原聖人",team:"TEAM RAIDEN/雷電",gender:"男"},
+{id:"setokuma",label:"瀬戸熊直樹",team:"TEAM RAIDEN/雷電",gender:"男"},
+{id:"honda",label:"本田朋広",team:"TEAM RAIDEN/雷電",gender:"男"},
+{id:"kurosawa",label:"黒沢咲",team:"TEAM RAIDEN/雷電",gender:"女"},
+{id:"suzuki_d",label:"鈴木大介",team:"BEAST X",gender:"男"},
+{id:"shimoishi",label:"下石戟",team:"BEAST X",gender:"男"},
+{id:"tojyo",label:"東城りお",team:"BEAST X",gender:"女"},
+{id:"nakata",label:"中田花奈",team:"BEAST X",gender:"女"},
+{id:"kobayashi_t",label:"小林剛",team:"U-NEXT Pirates",gender:"男"},
+{id:"suzuki_y",label:"鈴木優",team:"U-NEXT Pirates",gender:"男"},
+{id:"nakabayashi",label:"仲林圭",team:"U-NEXT Pirates",gender:"男"},
+{id:"mizuhara_2",label:"瑞原明奈",team:"U-NEXT Pirates",gender:"女"}
+];
+const HIGHLIGHT_SET=new Set(["石井一馬","三浦智博","HIRO柴田","逢川恵夢","永井孝典","阿久津翔太","下石戟","東城りお"]);
+const teams=["EARTH JETS","赤坂ドリブンズ","EX風林火山","KADOKAWAサクラナイツ","KONAMI麻雀格闘倶楽部","渋谷ABEMAS","セガサミーフェニックス","TEAM RAIDEN/雷電","BEAST X","U-NEXT Pirates"];
+const leftTeams=new Set();const manualRight=new Set();
+const leftRoot=document.getElementById('left');const rightRoot=document.getElementById('right');const leftEmpty=document.getElementById('leftEmpty');const rightEmpty=document.getElementById('rightEmpty');
+function groupByTeam(items){const map=new Map();teams.forEach(t=>map.set(t,[]));items.forEach(it=>{if(!map.has(it.team))map.set(it.team,[]);map.get(it.team).push(it);});return map;}
+function renderPanel(root,items){root.innerHTML='';const map=groupByTeam(items);for(const [team,arr] of map.entries()){if(arr.length===0)continue;const g=document.createElement('div');g.className='group';const pill=document.createElement('span');pill.className='team-pill';pill.textContent=team;pill.style.background="var(--"+team.replaceAll('/','-').replaceAll(' ','-')+")";pill.style.color='#fff';const headWrap=document.createElement('div');headWrap.appendChild(pill);const list=document.createElement('div');list.className='list';arr.forEach(p=>{const chip=document.createElement('div');chip.className='chip '+(p.gender==='男'?'male':'female');if(HIGHLIGHT_SET.has(p.label))chip.classList.add('highlight');chip.textContent=p.label;chip.onclick=()=>{if(manualRight.has(p.id))manualRight.delete(p.id);else manualRight.add(p.id);render();};list.appendChild(chip);});g.appendChild(headWrap);g.appendChild(list);root.appendChild(g);}}}
+function getCurrentLeftItems(){return DATA.filter(p=>leftTeams.has(p.team)&&!manualRight.has(p.id));}
+function getCurrentRightItems(){return DATA.filter(p=>manualRight.has(p.id));}
+function render(){const leftItems=getCurrentLeftItems();const rightItems=getCurrentRightItems();renderPanel(leftRoot,leftItems);renderPanel(rightRoot,rightItems);leftEmpty.style.display=leftItems.length?'none':'block';rightEmpty.style.display=rightItems.length?'none':'block';}
+const teamsRow=document.getElementById('teamsRow');const teamButtons={};teams.forEach(team=>{const btn=document.createElement('button');btn.className='tbtn';btn.dataset.team=team;const pill=document.createElement('span');pill.className='team-pill';pill.textContent=team;pill.style.background="var(--"+team.replaceAll('/','-').replaceAll(' ','-')+")";pill.style.color='#fff';btn.appendChild(pill);btn.onclick=()=>{if(leftTeams.has(team)){leftTeams.delete(team);btn.classList.remove('active');}else{leftTeams.add(team);btn.classList.add('active');}render();};teamButtons[team]=btn;teamsRow.appendChild(btn);});
+document.getElementById('resetAll').onclick=()=>{leftTeams.clear();manualRight.clear();Object.values(teamButtons).forEach(b=>b.classList.remove('active'));render();};
+document.getElementById('resetTeams').onclick=()=>{leftTeams.clear();Object.values(teamButtons).forEach(b=>b.classList.remove('active'));render();};
+document.getElementById('selectAllTeams').onclick=()=>{teams.forEach(t=>leftTeams.add(t));Object.values(teamButtons).forEach(b=>b.classList.add('active'));render();};
+document.getElementById('swapBtn').onclick=()=>{getCurrentLeftItems().forEach(p=>manualRight.add(p.id));getCurrentRightItems().forEach(p=>manualRight.delete(p.id));render();};
+document.getElementById('excludeMale').onchange=e=>{if(e.target.checked){getCurrentLeftItems().filter(p=>p.gender==='男').forEach(p=>manualRight.add(p.id));render();}};
+document.getElementById('excludeFemale').onchange=e=>{if(e.target.checked){getCurrentLeftItems().filter(p=>p.gender==='女').forEach(p=>manualRight.add(p.id));render();}};
+render();
+</script>
+</body>
+</html>
