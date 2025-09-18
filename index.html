@@ -17,7 +17,6 @@
     --chip-bd:#cbd5e1;
     --gap:6px;
     --control-col:100px;
-    --exclude-col:100px;
     /* チームカラー */
     --EARTH-JETS:#065f46;           /* 深緑 */
     --赤坂ドリブンズ:#a3e635;      /* 黄緑 */
@@ -57,14 +56,15 @@
     margin:0 0 4px;
     line-height:1.1;
   }
-  /* 左 | 細い操作列 | 中 | 細い除外列 | 右 */
+  /* 左大（2.5fr）｜細い操作列｜中小（1fr）｜右（非表示） */
   .grid{
     display:grid;
-    grid-template-columns: 1fr var(--control-col) 1fr var(--exclude-col) 1fr;
+    grid-template-columns: 2.5fr var(--control-col) 1fr 0fr;
     gap:var(--gap);
     align-items:start;
     flex:1 1 auto;
     min-height:0;
+    width:100%;
   }
   .panel{
     background:var(--panel-bg);
@@ -75,50 +75,45 @@
     overflow:auto;
   }
   .panel h2{margin:0 0 4px;font-size:13px;font-weight:800}
-  /* 「チーム名 + 最大4人」を横一列で */
+  .panel.left h2{font-size:14px}
+  .panel.mid h2{font-size:12px;opacity:0.9}
+  /* 左のリストは少し中央寄せに見えるように */
+  .list-left{display:flex;flex-direction:column;justify-content:center;min-height:calc(100% - 20px)}
+  /* 1行：短縮チーム名 + 4人 */
   .groupRow{
     display:grid;
     grid-template-columns:110px repeat(4, 1fr);
     align-items:center;
     gap:4px;
-    padding:2px 4px;
+    padding:4px 4px;
     border-radius:6px;
-    margin-bottom:2px;
+    margin-bottom:4px;
   }
   .team-pill{
     display:inline-block;
-    min-width:110px; /* 指示どおり全チーム共通幅 */
-    text-align:center;
-    padding:2px 4px;
+    min-width:110px; text-align:center;
+    padding:3px 6px;
     border-radius:999px;
-    font-weight:800;
-    font-size:11px;
-    color:#fff;
-    white-space:nowrap;
-    cursor:pointer;
+    font-weight:800; font-size:12px;
+    color:#fff; white-space:nowrap; cursor:pointer;
   }
   .chip{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    padding:4px 6px;
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:8px 10px;  /* 少しだけ高さを増やす */
     border-radius:999px;
     border:2px solid var(--chip-bd);
     background:var(--chip-bg);
-    font-size:12px;
-    font-weight:700;
-    cursor:pointer;
-    min-width:0;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
+    font-weight:800; cursor:pointer;
+    min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
+  .panel.left .chip{ font-size:22px; }   /* 左は約1.5倍（旧15px→22px） */
+  .panel.mid  .chip{ font-size:12px; }   /* 中央は小さめのまま */
   .chip.male{background:#dbeafe}      /* 男＝薄い青 */
   .chip.female{background:#ffe4e6}    /* 女＝薄いピンク */
   .chip.highlight{background:#fef9c3 !important} /* 指定の薄黄色 */
   .empty{font-size:11px;color:#64748b;padding:0 4px}
   /* 細い操作列 */
-  .centerCol, .excludeCol{
+  .centerCol{
     display:flex; flex-direction:column; align-items:stretch; gap:6px; padding-top:2px; height:100%;
   }
   .btn{
@@ -131,7 +126,10 @@
     font-size:12px;
     white-space:nowrap; /* 1行に収める */
   }
+  #excludeAllMid{ margin-top:18px; } /* 1コマ分下げる */
   .btn.active{ background:#111; color:#fff; }
+  /* 右（完全除外）はDOM上保持するが非表示 */
+  .right-hidden{ display:none !important; }
   /* 下部：リセットのみ */
   .controls{display:flex;justify-content:flex-start}
   .reset-big{
@@ -150,11 +148,13 @@
   <h1 class="title">誰やねん</h1>
 
   <div class="grid">
-    <!-- Left -->
-    <section class="panel">
+    <!-- Left (big) -->
+    <section class="panel left">
       <h2>・お前やねん</h2>
-      <div id="left"></div>
-      <div id="leftEmpty" class="empty">左側にはまだ何も表示されていません</div>
+      <div class="list-left">
+        <div id="left"></div>
+        <div id="leftEmpty" class="empty">左側にはまだ何も表示されていません</div>
+      </div>
     </section>
 
     <!-- Control between Left and Mid -->
@@ -162,22 +162,18 @@
       <button id="swapBtn" class="btn">左右を入れ替える</button>
       <button id="excludeMaleBtn" class="btn">男を除外</button>
       <button id="excludeFemaleBtn" class="btn">女を除外</button>
+      <button id="excludeAllMid" class="btn">完全に除外</button>
     </div>
 
-    <!-- Mid -->
-    <section class="panel">
+    <!-- Mid (small) -->
+    <section class="panel mid">
       <h2>・お前じゃないねん</h2>
       <div id="mid"></div>
       <div id="midEmpty" class="empty">中央にはまだ何もありません</div>
     </section>
 
-    <!-- Column between Mid and Right -->
-    <div class="excludeCol">
-      <button id="excludeAllMid" class="btn">完全に除外する</button>
-    </div>
-
-    <!-- Right (Excluded) -->
-    <section class="panel">
+    <!-- Right (Excluded) HIDDEN but stateful -->
+    <section class="panel right-hidden">
       <h2>・完全除外</h2>
       <div id="right"></div>
       <div id="rightEmpty" class="empty">完全除外にはまだ何もありません</div>
@@ -193,42 +189,52 @@
 <script>
 /* ------------------ Data ------------------ */
 const DATA=[
+/* EARTH JETS */
 {id:"ishii",label:"石井一馬",team:"EARTH JETS",short:"EARTH JETS",gender:"男"},
 {id:"miura",label:"三浦智博",team:"EARTH JETS",short:"EARTH JETS",gender:"男"},
 {id:"hiro",label:"HIRO柴田",team:"EARTH JETS",short:"EARTH JETS",gender:"男"},
 {id:"aikawa",label:"逢川恵夢",team:"EARTH JETS",short:"EARTH JETS",gender:"女"},
+/* 赤坂ドリブンズ */
 {id:"sonoda",label:"園田賢",team:"赤坂ドリブンズ",short:"赤坂ドリブンズ",gender:"男"},
 {id:"suzuki_ta",label:"鈴木たろう",team:"赤坂ドリブンズ",short:"赤坂ドリブンズ",gender:"男"},
 {id:"watanabe",label:"渡辺太",team:"赤坂ドリブンズ",short:"赤坂ドリブンズ",gender:"男"},
 {id:"asami",label:"浅見真紀",team:"赤坂ドリブンズ",short:"赤坂ドリブンズ",gender:"女"},
+/* EX風林火山 */
 {id:"katsumata",label:"勝又健志",team:"EX風林火山",short:"EX風林火山",gender:"男"},
 {id:"nagai",label:"永井孝典",team:"EX風林火山",short:"EX風林火山",gender:"男"},
 {id:"uchikawa",label:"内川幸太郎",team:"EX風林火山",short:"EX風林火山",gender:"男"},
 {id:"nikaido_a",label:"二階堂亜樹",team:"EX風林火山",short:"EX風林火山",gender:"女"},
+/* KADOKAWAサクラナイツ */
 {id:"hori",label:"堀慎吾",team:"KADOKAWAサクラナイツ",short:"サクラナイツ",gender:"男"},
 {id:"shibukawa",label:"渋川難波",team:"KADOKAWAサクラナイツ",short:"サクラナイツ",gender:"男"},
 {id:"akutsu",label:"阿久津翔太",team:"KADOKAWAサクラナイツ",short:"サクラナイツ",gender:"男"},
 {id:"okada_2",label:"岡田紗佳",team:"KADOKAWAサクラナイツ",short:"サクラナイツ",gender:"女"},
+/* KONAMI麻雀格闘倶楽部 */
 {id:"sasaki_h",label:"佐々木寿人",team:"KONAMI麻雀格闘倶楽部",short:"KONAMI",gender:"男"},
 {id:"takizawa",label:"滝沢和典",team:"KONAMI麻雀格闘倶楽部",short:"KONAMI",gender:"男"},
 {id:"takamiya",label:"高宮まり",team:"KONAMI麻雀格闘倶楽部",short:"KONAMI",gender:"女"},
 {id:"date_arisa",label:"伊達朱里紗",team:"KONAMI麻雀格闘倶楽部",short:"KONAMI",gender:"女"},
+/* 渋谷ABEMAS */
 {id:"oi",label:"多井隆晴",team:"渋谷ABEMAS",short:"ABEMAS",gender:"男"},
 {id:"shiratori",label:"白鳥翔",team:"渋谷ABEMAS",short:"ABEMAS",gender:"男"},
 {id:"matsumoto",label:"松本吉弘",team:"渋谷ABEMAS",short:"ABEMAS",gender:"男"},
 {id:"hyuga",label:"日向藍子",team:"渋谷ABEMAS",short:"ABEMAS",gender:"女"},
+/* セガサミーフェニックス */
 {id:"daigo",label:"醍醐大",team:"セガサミーフェニックス",short:"セガサミー",gender:"男"},
 {id:"takeuchi",label:"竹内元太",team:"セガサミーフェニックス",short:"セガサミー",gender:"男"},
 {id:"asai",label:"浅井堂岐",team:"セガサミーフェニックス",short:"セガサミー",gender:"男"},
 {id:"chinamori_2",label:"茅森早香",team:"セガサミーフェニックス",short:"セガサミー",gender:"女"},
+/* TEAM RAIDEN/雷電 */
 {id:"hagiwara",label:"萩原聖人",team:"TEAM RAIDEN/雷電",short:"雷電",gender:"男"},
 {id:"setokuma",label:"瀬戸熊直樹",team:"TEAM RAIDEN/雷電",short:"雷電",gender:"男"},
 {id:"honda",label:"本田朋広",team:"TEAM RAIDEN/雷電",short:"雷電",gender:"男"},
 {id:"kurosawa",label:"黒沢咲",team:"TEAM RAIDEN/雷電",short:"雷電",gender:"女"},
+/* BEAST X */
 {id:"suzuki_d",label:"鈴木大介",team:"BEAST X",short:"BEAST X",gender:"男"},
 {id:"shimoishi",label:"下石戟",team:"BEAST X",short:"BEAST X",gender:"男"},
 {id:"tojyo",label:"東城りお",team:"BEAST X",short:"BEAST X",gender:"女"},
 {id:"nakata",label:"中田花奈",team:"BEAST X",short:"BEAST X",gender:"女"},
+/* U-NEXT Pirates */
 {id:"kobayashi_t",label:"小林剛",team:"U-NEXT Pirates",short:"Pirates",gender:"男"},
 {id:"suzuki_y",label:"鈴木優",team:"U-NEXT Pirates",short:"Pirates",gender:"男"},
 {id:"nakabayashi",label:"仲林圭",team:"U-NEXT Pirates",short:"Pirates",gender:"男"},
@@ -257,10 +263,15 @@ function itemsAt(loc){return DATA.filter(p=>(locationMap.get(p.id)||'left')===lo
 function moveTo(id,newLoc){const cur=locationMap.get(id)||'left';if(cur===newLoc)return;prevMap.set(id,cur);locationMap.set(id,newLoc);}
 function revertOne(id){
   const cur=locationMap.get(id)||'left';
-  if(cur==='right'){prevMap.set(id,'right');locationMap.set(id,'left');return;}
+  // 右（完全除外）にいる人名をクリックしたら左へ戻す（右は非表示運用）
+  if(cur==='right'){ prevMap.set(id,'right'); locationMap.set(id,'left'); return; }
   const prev=prevMap.get(id);
-  if(!prev){ if(cur==='left'){prevMap.set(id,'left');locationMap.set(id,'mid');} else if(cur==='mid'){prevMap.set(id,'mid');locationMap.set(id,'left');} }
-  else { locationMap.set(id,prev); prevMap.set(id,cur); }
+  if(!prev){
+    if(cur==='left'){prevMap.set(id,'left');locationMap.set(id,'mid');}
+    else if(cur==='mid'){prevMap.set(id,'mid');locationMap.set(id,'left');}
+  }else{
+    locationMap.set(id,prev); prevMap.set(id,cur);
+  }
 }
 function groupByTeam(items){
   const map=new Map();
@@ -279,7 +290,6 @@ function renderPanelRow(root,items,context){
     const row=document.createElement('div');
     row.className='groupRow';
     row.style.background=`color-mix(in hsl, var(--${key}) 14%, white)`;
-
     /* pill（短縮名） */
     const pill=document.createElement('span');
     pill.className='team-pill';
@@ -295,7 +305,6 @@ function renderPanelRow(root,items,context){
       render();
     });
     row.appendChild(pill);
-
     /* up to 4 chips */
     for(let i=0;i<4;i++){
       const p=arr[i];
@@ -364,7 +373,11 @@ document.getElementById('excludeFemaleBtn').addEventListener('click',(e)=>{
   }
   render();
 });
-document.getElementById('excludeAllMid').addEventListener('click',()=>{ itemsAt('mid').forEach(p=>moveTo(p.id,'right')); render(); });
+/* 完全に除外：中央にいる全員を right へ（UI上は消える）。何度でも運用可 */
+document.getElementById('excludeAllMid').addEventListener('click',()=>{
+  itemsAt('mid').forEach(p=>moveTo(p.id,'right'));
+  render();
+});
 
 /* 初期描画 */
 render();
